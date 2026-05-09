@@ -1,4 +1,4 @@
-#include "..\Header\Common.h"
+#include "..\Header\Common.hpp"
 
 std::string mult(std::string op1, std::string op2)
 {

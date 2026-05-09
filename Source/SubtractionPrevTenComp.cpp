@@ -1,4 +1,4 @@
-#include "..\Header\Common.h"
+#include "..\Header\Common.hpp"
 
 char tensComplement(char digit)
 {
@@ -57,10 +57,10 @@ std::string subRem(std::string op, char borrow)
 	if (borrow == '1')
 	{
 		char d1 = prev(op[0]);
-		op.erase(op.begin());
 
 		if (d1 == 'N') // op[0] = '0'
 		{
+			op.erase(op.begin());
 			result = charToString(prev(tensComplement('0'))) + subRem(op, '1');
 		}
 		else
