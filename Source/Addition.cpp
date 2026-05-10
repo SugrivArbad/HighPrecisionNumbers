@@ -145,15 +145,20 @@ std::string remZ(std::string opZ)
 
 std::string addDigit(char c1, char c2, char carryForward)
 {
-	std::cout << "	addDigit : c1 = " << c1 << " c2 = " << c2 << " carryForward = " << carryForward << std::endl;
 	std::string carryBase = "00";
+
+#ifdef TRACE_L_1
+	std::cout << "	addDigit : c1 = " << c1 << " c2 = " << c2 << " carryForward = " << carryForward << std::endl;
+#endif TRACE_L_1
 
 	if (c2 == '0')
 	{
 		carryBase[1] = c1;
-		carryBase[0] = c2;
+		carryBase[0] = carryForward;
 
+#ifdef TRACE_L_1
 		std::cout << "	     addDigit : cond1 : c1 = " << c1 << " c2 = " << c2 << " carryForward = " << carryForward << " carryBase = " << carryBase[0] << carryBase[1] << std::endl;
+#endif TRACE_L_1
 	}
 	else
 	{
@@ -163,7 +168,9 @@ std::string addDigit(char c1, char c2, char carryForward)
 		c1 = carryBase[1];
 		c2 = prev(c2);
 
+#ifdef TRACE_L_1
 		std::cout << "	     addDigit : cond2 :  c1 = " << c1 << " c2 = " << c2 << " carryForward = " << carryForward << " carryBase = " << carryBase[0] << carryBase[1] << std::endl;
+#endif TRACE_L_1
 
 		carryBase = addDigit(c1, c2, carryForward);
 	}
@@ -800,7 +807,9 @@ std::string add1(std::string op1, std::string op2, char carry)
 	std::string carryBase = "00";
 	std::string result;
 
+#ifdef TRACE_L_1
 	std::cout << " add1 : op1 = " << op1 << " op2 = " << op2 << " carry = " << carry << " op1.empty() = " << op1.empty() << " op2.empty() = " << op2.empty() << std::endl;
+#endif TRACE_L_1
 
 	if (op1.empty() && op2.empty())
 	{
@@ -831,7 +840,9 @@ std::string add1(std::string op1, std::string op2, char carry)
 			d1 = carryBase[1];
 		}
 
+#ifdef TRACE_L_1
 		std::cout << " add1 : cond4" << std::endl;
+#endif TRACE_L_1
 
 		carryBase = addDigit(d1, d2, newCarry);
 
@@ -847,7 +858,9 @@ std::string add(std::string op1, std::string op2)
 {
 	std::string addition = remZ(add1(rev(op1), rev(op2), '0'));
 
+#ifdef TRACE_L_1
 	std::cout << "   add : addition = " << addition << std::endl;
+#endif TRACE_L_1
 
 	return addition;
 }
@@ -983,7 +996,7 @@ void displayOperation(std::string op1, std::string op2, std::string result, char
 
 	if (diff < 0)
 	{
-		for (long long int ind = 0; ind < diff; ind++)
+		for (long long int ind = 0; ind < -diff; ind++)
 			std::cout << " ";
 	}
 
@@ -1045,39 +1058,64 @@ void testDigit();
 
 int main(void)
 {
-	////// std::cout << " main START ************* " << std::endl;
+#ifdef TRACE_L_1
+	std::cout << " main START ************* " << std::endl;
+#endif TRACE_L_1
 
-	std::string op1 = "-9999999999999999999999999999999999999999999999999";
-	std::string op2 = "11111111111111111111111111111111111111111118888888888888888888888888888888";
+	std::string result = "";
+	std::string op1, op2;
 
-	/*std::string result = addition(op1, op2);
-	displayAddition(op1, op2, result);*/
+	op1 = "-9999999999999999999999999999999999999999999999999";
+	op2 = "11111111111111111111111111111111111111111118888888888888888888888888888888";
 
 	std::string op3 = "1111111111111111111111111111111111999999999999999999999999999999999999999999999999999999";
 	std::string op4 = "22222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222";
 
-	/*std::string result1 = add(op3, op4);
-	displayAddition(op3, op4, result1);*/
 
-	/*result1 = sub(op4, op3);
-	displayOperation(op4, op3, result1, '-');*/
 
-	////displayOperation("2", "01", addition("2", "01"), '+');
+	/* ---- ADDITION START ------------------ */
+
+	result = addition(op1, op2);
+	displayOperation(op1, op2, result, '+');
+
+	result = add(op3, op4);
+	displayOperation(op3, op4, result, '+');
+
+	/* ---- ADDITION END  ------------------- */
+
+
+
+
+	/* ---- SUBTRACTION START ------------------- */
+	
+	result = sub(op4, op3);
+	displayOperation(op4, op3, result, '-');
 
 	std::string opE1 = "60", opE2 = "1";
-	displayOperation(opE1, opE2, sub(opE1, opE2), '-');
+	result = sub(opE1, opE2);
+	displayOperation(opE1, opE2, result, '-');
+
+	/* ---- SUBTRACTION END  ------------------- */
+
+
+
+
+	/* ---- MULTIPLICATION START  ------------------- */
 
 	std::string opM1 = "1200";
 	std::string opM2 = "60";
-	/*std::string resultMul1 = mult(opM1, opM2);
-	displayOperation(opM1, opM2, resultMul1, '*');*/
+	std::string resultMul1 = mult(opM1, opM2);
+	displayOperation(opM1, opM2, resultMul1, '*');
+	
+	/* ---- MULTIPLICATION END  ------------------- */
 
-	displayAddition(opM1, opM2, addition(opM1, opM2));
 	
 
+#ifdef TRACE_L_1
 	std::cout << std::endl << std::endl << " main end : op1.size() = " << op1.size() << " op2.size() = " << op2.size() << " op1.max_size() = " << op1.max_size() << std::endl << std::endl;
 
 	std::cout << " BUT MAX string size allowed by cl.exe compiler of VS2022 is '16383'." << std::endl << std::endl;
+#endif TRACE_L_2
 
 
 	/*--------- EXTRA OPERATIONS : START --------------------------------------------------------------------*/
@@ -1105,19 +1143,28 @@ int main(void)
 	///////*result = addition(op1, op2);
 	//////displayAddition(op1, op2, result);
 
+	////displayOperation("2", "01", addition("2", "01"), '+');
+	
+	//////displayAddition(opM1, opM2, addition(opM1, opM2));
+
 	/*--------- EXTRA OPERATIONS : END  ---------------------------------------------------------------------*/
 }
 
 /***************** TESTING **************************************/
 void testAddDigit()
 {
+#ifdef TRACE_L_1
 	std::cout << std::endl << " ******** testAddDigit start ***************************** " << std::endl;
+#endif TRACE_L_1
+
 	std::string carryBase = "00";
 
 	carryBase = addDigit('9', '8', '0');
 
+#ifdef TRACE_L_1
 	std::cout << " testAddDigit : carryBase = " << carryBase[0] << carryBase[1] << std::endl;
-	std::cout << std::endl << " ******** testAddDigit start ***************************** " << std::endl << std::endl;
+	std::cout << std::endl << " ******** testAddDigit end ***************************** " << std::endl << std::endl;
+#endif TRACE_L_1
 }
 
 

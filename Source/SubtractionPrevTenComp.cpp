@@ -57,10 +57,10 @@ std::string subRem(std::string op, char borrow)
 	if (borrow == '1')
 	{
 		char d1 = prev(op[0]);
+		op.erase(op.begin());
 
 		if (d1 == 'N') // op[0] = '0'
 		{
-			op.erase(op.begin());
 			result = charToString(prev(tensComplement('0'))) + subRem(op, '1');
 		}
 		else
@@ -80,6 +80,10 @@ std::string subDigit(char d1, char d2, char borrow)
 {
 	std::string borrowBase = "";
 
+#ifdef TRACE_L_1
+	std::cout << "  subDigit : d1 = " << d1 << " d2 = " << tensComplement(d2) << "  borrow = " << borrow << std::endl;
+#endif TRACE_L_1
+
 	if (borrow == '1')
 		d1 = prev(d1);
 
@@ -92,7 +96,10 @@ std::string subDigit(char d1, char d2, char borrow)
 		if (isGreaterDigit(d2, d1)) // d2 > d1
 		{
 			borrowBase = addDigit(d1, tensComplement(d2), '1');
-			std::cout << "  subDigit :  d1 = " << d1 << " d2 = " << d2 << "  borrowBase = " << borrowBase[0] << borrowBase[1] << std::endl;
+
+#ifdef TRACE_L_1
+			std::cout << "  subDigit : after addDigit :  d1 = " << d1 << " d2 = " << tensComplement(d2) << "  borrowBase = " << borrowBase[0] << borrowBase[1] << std::endl;
+#endif TRACE_L_1
 		}
 		else // d2 <= d1
 		{
@@ -130,7 +137,16 @@ std::string sub1(std::string op1, std::string op2, char borrow)
 		op1.erase(op1.begin());
 		op2.erase(op2.begin());
 
+#ifdef TRACE_L_1
+		std::cout << " sub1 : d1 = " << d1 << " d2 = " << d2 << " borrow = " << borrow << std::endl;
+#endif TRACE_L_1
+
 		std::string borrowBase = subDigit(d1, d2, borrow);
+
+#ifdef TRACE_L_1
+		std::cout << " sub1 : borrowBase = " << borrowBase[0] << borrowBase[1] << std::endl;
+#endif TRACE_L_1
+
 		result = borrowBase[1] + sub1(op1, op2, borrowBase[0]);
 	}
 

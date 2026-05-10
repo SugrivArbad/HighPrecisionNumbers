@@ -8,6 +8,9 @@
 
 #define NEGATIVE "-"
 
+#define TRACE_L_1
+#undef TRACE_L_1
+
 std::string subRem(std::string op, char borrow);
 std::string sub(std::string op1, std::string op2);
 
