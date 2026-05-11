@@ -124,7 +124,7 @@ void testMultiplication()
 
 	std::string opM1 = "1200";
 	std::string opM2 = "60";
-	std::string resultMul1 = mult(opM1, opM2);
+	std::string resultMul1 = multiplication(opM1, opM2);
 	displayOperation(opM1, opM2, resultMul1, '*');
 
 	/* ---- MULTIPLICATION END  ------------------- */
@@ -140,25 +140,9 @@ void testMultiplication()
 }
 
 
-void testAllIntegers_V1()
-{
-	long long res;
-	std::string strRes;
 
-	for (long long i = INT_MIN; i < INT_MAX; i++)
-	{
-		for (long long j = INT_MIN; j < INT_MAX; j++)
-		{
-			long long res = i + j;
-			std::string strRes = addition(std::to_string(i), std::to_string(j));
-			if (std::to_string(res) != strRes)
-			{
-				std::cout << " ADDTION NOT MATCHED : " << i << " + " << j << " = " << res << std::endl;
-				std::cout << "        YOUR OUTPUT: " << strRes << std::endl << std::endl;
-			}
-		}
-	}
-}
+
+
 
 void testAllIntegersAddition()
 {
@@ -289,39 +273,80 @@ void testAllIntegersSubtraction()
 	std::cout << "Test complete. Failures: " << failures << "\n";
 }
 
-
-void testVerification()
+void testAllIntegersMultiplication()
 {
-#ifndef TRACE_L_1
-	std::cout << " testVerification : " << std::endl << std::endl;
-#endif // TRACE_L_1
 
-	std::string op1;
-	std::string op2;
-	std::string result = "";
+	auto check = [](long long i, long long j) {
+		std::ofstream fout;
+		static int cnt = 1;
 
-	op1 = "1830096269";
-	op2 = "-1960577484";
+		long long expected = i * j;
+		std::string result = multiplication(std::to_string(i), std::to_string(j));
+		
+		if (std::to_string(expected) != result)
+		{
+			std::cout << std::endl << cnt++ << "] ****** MISMATCH: " << i << " * " << j
+				<< " expected = " << expected
+				<< " got = " << result << std::endl << std::endl;
 
-#ifndef TRACE_L_1
-	std::cout << " testVerification : op1 = " << op1 << " op2 = " << op2 << std::endl << std::endl;
-#endif // TRACE_L_1
+#ifdef TRACE_L_2
+			fout.open("testAllIntegersMultiplication.txt", std::ios::app);
+			fout << std::endl << cnt++ << "] ****** MISMATCH: " << i << " * " << j
+				<< " expected = " << expected
+				<< " got = " << result << std::endl << std::endl;
+			fout.close();
+#endif // TRACE_L_2
 
-	result = addition(op1, op2);
+			return false;
+		}
 
-	displayOperation(op1, op2, result, '+');
+#ifndef TRACE_L_2
+		fout.open("testAllIntegersMultiplication.txt", std::ios::app);
+		fout << cnt++ << "] MATCHED : " << i << " * " << j
+			<< " expected = " << expected
+			<< " got = " << result << "\n";
+		fout.close();
+#endif // TRACE_L_2
 
+		return true;
+		};
 
-	/*
-MISMATCH: 1830096269 + -1960577484 expected = -130481215 got = 9869518785
-MISMATCH : -174203477 + 858391973 expected = 684188496 got = -315811504
-MISMATCH : -360866167 + 717705912 expected = 356839745 got = -643160255
-MISMATCH : 1376607447 + -1828624809 expected = -452017362 got = 9547982638
-*/
+	int failures = 0;
 
+	// 1. Boundary values
+	std::vector<long long> boundaries = {
+		INT_MIN, INT_MIN + 1LL, -1LL, 0LL, 1LL,
+		INT_MAX - 1LL, INT_MAX,
+		(long long)INT_MIN - 1, (long long)INT_MAX + 1   // beyond int range
+	};
+
+	for (long long i : boundaries)
+		for (long long j : boundaries)
+			if (!check(i, j)) failures++;
+
+	// 2. Random sampling across full range
+	std::mt19937_64 rng(42);
+	std::uniform_int_distribution<long long> dist(INT_MIN, INT_MAX);
+	for (int k = 0; k < 1'000'000; k++)
+		if (!check(dist(rng), dist(rng))) failures++;
+
+	// 3. Small values exhaustively (-1000 to 1000)
+	for (long long i = -1000; i <= 1000; i++)
+		for (long long j = -1000; j <= 1000; j++)
+			if (!check(i, j)) failures++;
+
+	std::cout << "Test complete. Failures: " << failures << "\n";
 }
 
-void testAddDigit();
+
+
+
+
+
+
+
+
+
 
 int main(int argc, char* argv[])
 {
@@ -336,7 +361,7 @@ int main(int argc, char* argv[])
 	// your subtraction
 	displayOperation(argv[1], argv[2], subtraction(argv[1], argv[2]), '-');
 	// your multiplication
-	displayOperation(argv[1], argv[2], mult(argv[1], argv[2]), '*');
+	displayOperation(argv[1], argv[2], multiplication(argv[1], argv[2]), '*');
 
 	std::cout << std::endl << std::endl << "===========================================================================================================" << std::endl << std::endl << std::endl << std::endl;
 
@@ -353,28 +378,10 @@ int main(int argc, char* argv[])
 	//testAllIntegersAddition();
 
 	// big test subtraction
-	testAllIntegersSubtraction();
+	//testAllIntegersSubtraction();
 
-
-	// testVerification
-	//testVerification();
-}
-
-/***************** TESTING **************************************/
-void testAddDigit()
-{
-#ifdef TRACE_L_1
-	std::cout << std::endl << " ******** testAddDigit start ***************************** " << std::endl;
-#endif // TRACE_L_1
-
-	/*std::string carryBase = "00";
-
-	carryBase = addDigit('9', '8', '0');*/
-
-#ifdef TRACE_L_1
-	std::cout << " testAddDigit : carryBase = " << carryBase[0] << carryBase[1] << std::endl;
-	std::cout << std::endl << " ******** testAddDigit end ***************************** " << std::endl << std::endl;
-#endif // TRACE_L_1
+	// big test multiplication
+	testAllIntegersMultiplication();
 }
 
 
@@ -386,7 +393,8 @@ void testAddDigit()
  * 4. Use framaC IDE
  * 5. Comparison of digits based on ASCII char
  * 6. Convert switch cases into maps
- * 7. Add signed integers for subtraction
+ * 7. Add multiplication with signed integer
+ * 8. Add division with signed integer
 \******************************************************************************************/
 
 

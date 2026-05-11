@@ -162,7 +162,7 @@ std::string remZ(std::string opZ)
 		std::cout << " remZ 3 : opZ = " << opZ << std::endl;
 #endif // TRACE_L_1
 
-		if (opZ == "")
+		if (opZ.empty())
 			opZ = "0";
 		else
 			opZ = sign + opZ;
