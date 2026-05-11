@@ -1,8 +1,7 @@
-#pragma once
-
 #ifndef COMMON_H_
 #define COMMON_H_
 
+#include <string.h>
 #include <string>
 #include <iostream>
 
@@ -13,6 +12,8 @@
 
 std::string subRem(std::string op, char borrow);
 std::string sub(std::string op1, std::string op2);
+
+std::string subDecision(std::string op1, std::string op2, bool isFirstNegative);
 
 std::string add(std::string op1, std::string op2);
 std::string mult(std::string op1, std::string op2);
@@ -39,4 +40,4 @@ bool isGreaterDigit(char d1, char d2);
 
 bool isGreaterThan(std::string op1, std::string op2);
 
-#endif COMMON_H_
+#endif // COMMON_H_

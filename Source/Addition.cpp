@@ -1,4 +1,5 @@
 #include "..\Header\Common.hpp"
+#include <map>
 
 /***************************************************\
 |*** COMMON FUNCTIONS START ************************|
@@ -132,13 +133,48 @@ std::string rev(std::string str)
 
 std::string remZ(std::string opZ)
 {
-	////// while (opZ[0] == '0')
-	////// 	opZ.erase(opZ.begin());
+	try
+	{
+#ifdef TRACE_L_1
+		std::cout << " remZ 1 : opZ = " << opZ << std::endl;
+#endif // TRACE_L_1
 
-	opZ = rev(opZ);
+		if (opZ.empty())
+		{
+			throw std::runtime_error("result is empty");
+		}
 
-	while (opZ[0] == '0')
-		opZ.erase(opZ.begin());
+		std::string sign = "";
+		if (opZ[0] == '+' || opZ[0] == '-')
+		{
+			sign = opZ[0];
+			opZ.erase(opZ.begin());
+		}
+
+#ifdef TRACE_L_1
+		std::cout << " remZ 2 : opZ = " << opZ << std::endl;
+#endif // TRACE_L_1
+
+		while (!opZ.empty() && opZ[0] == '0')
+			opZ.erase(opZ.begin());
+
+#ifdef TRACE_L_1
+		std::cout << " remZ 3 : opZ = " << opZ << std::endl;
+#endif // TRACE_L_1
+
+		if (opZ == "")
+			opZ = "0";
+		else
+			opZ = sign + opZ;
+
+#ifdef TRACE_L_1
+		std::cout << " remZ 4 : opZ = " << opZ << std::endl;
+#endif // TRACE_L_1
+	}
+	catch (std::exception& ex)
+	{
+		std::cout << "EXCEPTION : remZ : Addition.cpp : " << ex.what() << std::endl;
+	}
 
 	return opZ;
 }
@@ -149,7 +185,7 @@ std::string addDigit(char c1, char c2, char carryForward)
 
 #ifdef TRACE_L_1
 	std::cout << "	addDigit : c1 = " << c1 << " c2 = " << c2 << " carryForward = " << carryForward << std::endl;
-#endif TRACE_L_1
+#endif // TRACE_L_1
 
 	if (c2 == '0')
 	{
@@ -158,7 +194,7 @@ std::string addDigit(char c1, char c2, char carryForward)
 
 #ifdef TRACE_L_1
 		std::cout << "	     addDigit : cond1 : c1 = " << c1 << " c2 = " << c2 << " carryForward = " << carryForward << " carryBase = " << carryBase[0] << carryBase[1] << std::endl;
-#endif TRACE_L_1
+#endif // TRACE_L_1
 	}
 	else
 	{
@@ -170,7 +206,7 @@ std::string addDigit(char c1, char c2, char carryForward)
 
 #ifdef TRACE_L_1
 		std::cout << "	     addDigit : cond2 :  c1 = " << c1 << " c2 = " << c2 << " carryForward = " << carryForward << " carryBase = " << carryBase[0] << carryBase[1] << std::endl;
-#endif TRACE_L_1
+#endif // TRACE_L_1
 
 		carryBase = addDigit(c1, c2, carryForward);
 	}
@@ -758,10 +794,17 @@ bool isGreaterThan(std::string op1, std::string op2)
 			}
 			else
 			{
-				op1.erase(op1.begin());
-				op2.erase(op2.begin());
+				if (isGreaterDigit(d2, d1))
+				{
+					isGreater = false;
+				}
+				else
+				{
+					op1.erase(op1.begin());
+					op2.erase(op2.begin());
 
-				isGreater = isGreaterThan(op1, op2);
+					isGreater = isGreaterThan(op1, op2);
+				}
 			}
 		}
 	}
@@ -791,8 +834,12 @@ std::string addRem(std::string op, char carry)
 	{
 		carryBase = next(dig);
 		op.erase(op.begin());
-		
-		result = charToString(carryBase[1]) + addRem(op, carryBase[0]);
+
+		result = charToString(carryBase[1]);
+		if (op.empty())
+			result += carryBase[0];
+		else
+			result += addRem(op, carryBase[0]);
 	}
 	else
 	{
@@ -809,7 +856,7 @@ std::string add1(std::string op1, std::string op2, char carry)
 
 #ifdef TRACE_L_1
 	std::cout << " add1 : op1 = " << op1 << " op2 = " << op2 << " carry = " << carry << " op1.empty() = " << op1.empty() << " op2.empty() = " << op2.empty() << std::endl;
-#endif TRACE_L_1
+#endif // TRACE_L_1
 
 	if (op1.empty() && op2.empty())
 	{
@@ -842,7 +889,7 @@ std::string add1(std::string op1, std::string op2, char carry)
 
 #ifdef TRACE_L_1
 		std::cout << " add1 : cond4" << std::endl;
-#endif TRACE_L_1
+#endif // TRACE_L_1
 
 		carryBase = addDigit(d1, d2, newCarry);
 
@@ -856,24 +903,25 @@ std::string add1(std::string op1, std::string op2, char carry)
 
 std::string add(std::string op1, std::string op2)
 {
-	std::string addition = remZ(add1(rev(op1), rev(op2), '0'));
+	std::string addition = rev(add1(rev(op1), rev(op2), '0'));
 
 #ifdef TRACE_L_1
 	std::cout << "   add : addition = " << addition << std::endl;
-#endif TRACE_L_1
+#endif // TRACE_L_1
 
 	return addition;
 }
 
-// assumption : (op1 < 0 xor op2 < 0) -> ((op1 > 0 && op2 < 0) || (op1 < 0 && op2 > 0))
+// assumption : before passing to this function : (op1 < 0 xor op2 < 0) -> ((op1 > 0 && op2 < 0) || (op1 < 0 && op2 > 0)) 
 // means op1 is negative xor op2 is negative implies both at a time cannot be negative or positive
-// means 3rd parameter isFirstNegative = true implies op1 < 0 and false implies op2 < 0
+// means 3rd parameter isFirstNegative = [true implies op1 < 0 and false implies op2 < 0]
 // here op1 and op2 are scalar values means no positive/negative i.e it is externally indicated by 3rd paramter
-// subDecision : helper function for addition of +ve/-ve numbers
+// subDecision : helper function for +ve/-ve numbers
 std::string subDecision(std::string op1, std::string op2, bool isFirstNegative)
 {
 	std::string result;
 
+	// before passing to this function
 	// if (|op1| >  |op2| && op1 < 0) = -sub(op1, op2)
 	// if (|op1| >  |op2| && op2 < 0) = +sub(op1, op2)
 	// if (|op1| <= |op2| && op1 < 0) = +sub(op2, op1)
@@ -891,7 +939,7 @@ std::string subDecision(std::string op1, std::string op2, bool isFirstNegative)
 	return result;
 }
 
-std::string addition(std::string op1, std::string op2)
+std::string addition1(std::string op1, std::string op2)
 {
 	std::string result;
 
@@ -977,12 +1025,26 @@ std::string addition(std::string op1, std::string op2)
 	return result;
 }
 
+std::string addition(std::string op1, std::string op2)
+{
+	return remZ(addition1(op1, op2));
+}
+
+
 void displayOperation(std::string op1, std::string op2, std::string result, char oper)
 {
 	size_t op1Size = op1.size();
 	size_t op2Size = op2.size();
+	static int opCnt = 1;
 
-	std::cout << std::endl << "************************************************************************************************" << std::endl << std::endl << std::endl;
+	std::map<char, std::string> mapOperatorName = {
+		{'+', "ADDTION"},
+		{'-', "SUBTRACITON"},
+		{'*', "MULTIPLICATION"},
+		{'/', "DIVISION"}
+	};
+
+	std::cout << std::endl << "*************** " << opCnt << "] " << mapOperatorName[oper] << " START *********************************************************************************" << std::endl << std::endl << std::endl;
 
 	long long int diff = op2Size - op1Size;
 	if (diff > 0)
@@ -1000,45 +1062,9 @@ void displayOperation(std::string op1, std::string op2, std::string result, char
 			std::cout << " ";
 	}
 
-	std::cout << op2 << std::endl << std::endl;
+	std::cout << op2 << std::endl;
 
-	std::cout << "   _____";
-
-	diff = (diff > 0) ? op2Size : op1Size;
-
-	for (long long int ind = 0; ind < diff; ind++)
-		std::cout << "_";
-
-	std::cout << std::endl << std::endl << "        " << result << std::endl;
-	std::cout << std::endl << std::endl << std::endl << "************************************************************************************************" << std::endl;
-}
-
-void displayAddition(std::string op1, std::string op2, std::string result)
-{
-	size_t op1Size = op1.size();
-	size_t op2Size = op2.size();
-
-	std::cout << std::endl << "************************************************************************************************" << std::endl << std::endl << std::endl;
-
-	long long int diff = op2Size - op1Size;
-	if (diff > 0)
-	{
-		for (long long int ind = 0; ind < diff; ind++)
-			std::cout << " ";
-	}
-
-	std::cout << "        " << op1 << std::endl;
-	std::cout << "    +   ";
-
-	if (diff < 0)
-	{
-		for (long long int ind = 0; ind < diff; ind++)
-			std::cout << " ";
-	}
-
-	std::cout << op2 << std::endl << std::endl;
-
-	std::cout << "   _____";
+	std::cout << "   _____" << "_____";
 
 	diff = (diff > 0) ? op2Size : op1Size;
 
@@ -1046,147 +1072,11 @@ void displayAddition(std::string op1, std::string op2, std::string result)
 		std::cout << "_";
 
 	std::cout << std::endl << std::endl << "        " << result << std::endl;
-	std::cout << std::endl << std::endl << std::endl << "************************************************************************************************" << std::endl;
+	std::cout << std::endl << "*************** " << opCnt << "] " << mapOperatorName[oper] << " END **********************************************************************************" <<  std::endl << std::endl << std::endl << std::endl;
+
+	opCnt++;
 }
 
 /***************************************************\
 |*** ADDITION END **********************************|
 \***************************************************/
-
-
-void testDigit();
-
-int main(void)
-{
-#ifdef TRACE_L_1
-	std::cout << " main START ************* " << std::endl;
-#endif TRACE_L_1
-
-	std::string result = "";
-	std::string op1, op2;
-
-	op1 = "-9999999999999999999999999999999999999999999999999";
-	op2 = "11111111111111111111111111111111111111111118888888888888888888888888888888";
-
-	std::string op3 = "1111111111111111111111111111111111999999999999999999999999999999999999999999999999999999";
-	std::string op4 = "22222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222";
-
-
-
-	/* ---- ADDITION START ------------------ */
-
-	result = addition(op1, op2);
-	displayOperation(op1, op2, result, '+');
-
-	result = add(op3, op4);
-	displayOperation(op3, op4, result, '+');
-
-	/* ---- ADDITION END  ------------------- */
-
-
-
-
-	/* ---- SUBTRACTION START ------------------- */
-	
-	result = sub(op4, op3);
-	displayOperation(op4, op3, result, '-');
-
-	std::string opE1 = "60", opE2 = "1";
-	result = sub(opE1, opE2);
-	displayOperation(opE1, opE2, result, '-');
-
-	/* ---- SUBTRACTION END  ------------------- */
-
-
-
-
-	/* ---- MULTIPLICATION START  ------------------- */
-
-	std::string opM1 = "1200";
-	std::string opM2 = "60";
-	std::string resultMul1 = mult(opM1, opM2);
-	displayOperation(opM1, opM2, resultMul1, '*');
-	
-	/* ---- MULTIPLICATION END  ------------------- */
-
-	
-
-#ifdef TRACE_L_1
-	std::cout << std::endl << std::endl << " main end : op1.size() = " << op1.size() << " op2.size() = " << op2.size() << " op1.max_size() = " << op1.max_size() << std::endl << std::endl;
-
-	std::cout << " BUT MAX string size allowed by cl.exe compiler of VS2022 is '16383'." << std::endl << std::endl;
-#endif TRACE_L_2
-
-
-	/*--------- EXTRA OPERATIONS : START --------------------------------------------------------------------*/
-	////////op1 = "+9999999999999999999999999999999999999999999999999";
-	////////op2 = "+11111111111111111111111111111111111111111118888888888888888888888888888888";
-
-	///////*result = addition(op1, op2);
-	//////displayAddition(op1, op2, result);
-
-	//////op1 = "+9999999999999999999999999999999999999999999999999";
-	//////op2 = "11111111111111111111111111111111111111111118888888888888888888888888888888";*/
-
-	///////*result = addition(op1, op2);
-	//////displayAddition(op1, op2, result);
-
-	//////op1 = "9999999999999999999999999999999999999999999999999";
-	//////op2 = "+11111111111111111111111111111111111111111118888888888888888888888888888888";*/
-
-	///////*result = addition(op1, op2);
-	//////displayAddition(op1, op2, result);
-
-	//////op1 = "9999999999999999999999999999999999999999999999999";
-	//////op2 = "11111111111111111111111111111111111111111118888888888888888888888888888888";*/
-
-	///////*result = addition(op1, op2);
-	//////displayAddition(op1, op2, result);
-
-	////displayOperation("2", "01", addition("2", "01"), '+');
-	
-	//////displayAddition(opM1, opM2, addition(opM1, opM2));
-
-	/*--------- EXTRA OPERATIONS : END  ---------------------------------------------------------------------*/
-}
-
-/***************** TESTING **************************************/
-void testAddDigit()
-{
-#ifdef TRACE_L_1
-	std::cout << std::endl << " ******** testAddDigit start ***************************** " << std::endl;
-#endif TRACE_L_1
-
-	std::string carryBase = "00";
-
-	carryBase = addDigit('9', '8', '0');
-
-#ifdef TRACE_L_1
-	std::cout << " testAddDigit : carryBase = " << carryBase[0] << carryBase[1] << std::endl;
-	std::cout << std::endl << " ******** testAddDigit end ***************************** " << std::endl << std::endl;
-#endif TRACE_L_1
-}
-
-
-/******************************************************************************************\
-|********* TODO ***************************************************************************|
- * 1. #define DIGIT0 '0'  => for all '1' to '9'
- * 2. Add try catch blocks
- * 3. Add assertion
- * 4. Use framaC IDE
- * 5. Comparison of digits based on ASCII char
- * 6. Convert switch cases into maps
- * 
-\******************************************************************************************/
-
-
-
-
-
-/******************************************************************************************\
-|********* OUTPUT : on Console (X64 Native Tools Command Prompt for VS2022 ****************|
-\******************************************************************************************/
-
-
-
-
